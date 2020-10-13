@@ -65,6 +65,9 @@ struct pt {
  * @{
  */
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+
 /**
  * Initialize a protothread.
  *
@@ -112,6 +115,8 @@ struct pt {
  *
  * \hideinitializer
  */
+
+
 #define PT_BEGIN(pt) { char PT_YIELD_FLAG = 1; LC_RESUME((pt)->lc)
 
 /**
@@ -319,5 +324,7 @@ struct pt {
 /** @} */
 
 #endif /* __PT_H__ */
+
+#pragma GCC diagnostic pop
 
 /** @} */
