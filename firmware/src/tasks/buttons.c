@@ -1,8 +1,9 @@
+#include <sensors.h>
 #include <stdbool.h>
 #include "stm32f1xx.h"
 #include "gpio.h"
 #include "pt.h"
-#include "logic.h"
+#include "pid.h"
 #include "systick.h"
 
 PT_THREAD(processTimeout(struct pt *pt));

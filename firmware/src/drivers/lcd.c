@@ -11,12 +11,30 @@ static void sendCommand(uint8_t command);
 static void sendData(uint8_t data);
 static uint8_t writeSymbol(char c, uint8_t countlimit);
 
+#define GPIOB_OLED_RESET 14
+#define GPIOB_OLED_DC    12
+
+#define OLED_SET_DATA_MODE() GPIOB->BSRR = BSRR_SET(1 << GPIOB_OLED_DC)
+#define OLED_SET_COMMAND_MODE() GPIOB->BSRR = BSRR_RESET(1 << GPIOB_OLED_DC)
+#define OLED_IS_DATA_MODE() (GPIOB->ODR & (1 << GPIOB_OLED_DC))
+
 void displayInit()
 {
+	RCC->APB2ENR |= RCC_APB2ENR_IOPBEN | RCC_APB2ENR_AFIOEN;
+	RCC->APB1ENR |= RCC_APB1ENR_PWREN | RCC_APB1ENR_SPI2EN;
+	SPI2->CR1 = SPI_CR1_SSI | SPI_CR1_SSM | SPI_CR1_SPE | SPI_CR1_MSTR;// | SPI_CR1_BR_1;
+
+	GPIOB->CRH =
+			GPIOB->CRH & 0x0000FFFF |
+			(ALT_PUSH_PULL_FAST << (7 * 4)) |
+			(GENERAL_PUSH_PULL_FAST << (6 * 4)) |
+			(ALT_PUSH_PULL_FAST << (5 * 4)) |
+			(GENERAL_PUSH_PULL_FAST << (4 * 4));
+
 	//3uS reset
-	GPIOB->BSRR = GPIOB_OLED_RESET << 16; //RESET 0
+	GPIOB->BSRR = BSRR_RESET(1 << GPIOB_OLED_RESET); //RESET 0
 	delay(3);
-	GPIOB->BSRR = GPIOB_OLED_RESET; //RESET 1
+	GPIOB->BSRR = BSRR_SET(1 << GPIOB_OLED_RESET); //RESET 1
 	delay(3);
 
 	sendCommand(SegmentRemap_Inverted);
@@ -25,6 +43,7 @@ void displayInit()
 
 	sendCommand(0x8D); //CHARGEPUMP
 	sendCommand(0x14);
+
 
 	sendCommand(0xAF); //Display on
 
@@ -160,48 +179,48 @@ static uint8_t writeSymbol(char c, uint8_t countlimit)
 
 static void sendCommand(uint8_t command)
 {
-	if (GPIOB->ODR & GPIOB_OLED_DC) //���� �� ����� ������������ ������
+	if (OLED_IS_DATA_MODE())
 	{
-		while (SPI1->SR & SPI_SR_BSY);
+		while (SPI2->SR & SPI_SR_BSY);
 
-		GPIOB->BSRR = GPIOB_OLED_DC << 16; //DC -> 0
+		OLED_SET_COMMAND_MODE();
 	}
 
-	while (!(SPI1->SR & SPI_SR_TXE));
+	while (!(SPI2->SR & SPI_SR_TXE));
 
-	SPI1->DR = command;
+	SPI2->DR = command;
 }
 
 static void sendData(uint8_t data)
 {
-	if (!(GPIOB->ODR & GPIOB_OLED_DC)) //���� �� ����� ������������ �������
+	if (!OLED_IS_DATA_MODE())
 	{
-		while (SPI1->SR & SPI_SR_BSY);
+		while (SPI2->SR & SPI_SR_BSY);
 
-		GPIOB->BSRR = GPIOB_OLED_DC; //DC -> 1
+		OLED_SET_DATA_MODE();
 	}
 
-	while (!(SPI1->SR & SPI_SR_TXE));
+	while (!(SPI2->SR & SPI_SR_TXE));
 
-	SPI1->DR = data;
+	SPI2->DR = data;
 }
 
 static void sendData16(uint16_t data)
 {
-	if (!(GPIOB->ODR & GPIOB_OLED_DC)) //���� �� ����� ������������ �������
+	if (!OLED_IS_DATA_MODE())
 	{
-		while (SPI1->SR & SPI_SR_BSY);
+		while (SPI2->SR & SPI_SR_BSY);
 
-		GPIOB->BSRR = GPIOB_OLED_DC; //DC -> 1
+		OLED_SET_DATA_MODE();
 	}
 
-	while (!(SPI1->SR & SPI_SR_TXE));
+	while (!(SPI2->SR & SPI_SR_TXE));
 
-	SPI1->DR = data;
+	SPI2->DR = data;
 
-	while (!(SPI1->SR & SPI_SR_TXE));
+	while (!(SPI2->SR & SPI_SR_TXE));
 
-	SPI1->DR = data >> 8;
+	SPI2->DR = data >> 8;
 }
 
 

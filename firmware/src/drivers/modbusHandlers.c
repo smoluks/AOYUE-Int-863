@@ -1,23 +1,22 @@
+#include <sensors.h>
 #include "stm32f1xx.h"
 #include "modbus.h"
-#include "logic.h"
 #include "config.h"
+#include "pid.h"
+#include "main.h"
 
 extern work_mode_e work_mode;
-extern uint16_t sensors_themperature[SENSOR_COUNT];
+extern sensor_s sensors[SENSOR_COUNT];
 extern uint16_t ambient_themperature;
 extern config_s config;
 extern uint16_t targets_temperature[SENSOR_COUNT];
-extern uint8_t value;
 
 uint16_t getInputRegister(uint16_t address) {
 	if (address < SENSOR_COUNT)
-		return sensors_themperature[address];
+		return sensors[address].value;
 	switch (address) {
 		case 0x08:
 			return ambient_themperature;
-		case 0x09:
-			return value;
 		default:
 			return 0;
 	}

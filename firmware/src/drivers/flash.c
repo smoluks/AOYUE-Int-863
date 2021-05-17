@@ -2,9 +2,6 @@
 #include "stm32f1xx.h"
 #include "stdbool.h"
 
-#define FLASH_KEY1 ((uint32_t)0x45670123)
-#define FLASH_KEY2 ((uint32_t)0xCDEF89AB)
-
 #define PAGE_ADDRESS 0x0800FC00
 
 void flashWritePage(uint32_t address, uint8_t *data, uint32_t count);

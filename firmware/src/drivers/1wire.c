@@ -9,13 +9,28 @@ static void write1();
 static void write0();
 static bool read();
 
+#define GPIOB_1WIRE  		8
+
+#define ONEWIRE_PULLDOWN() GPIOB->BSRR = BSRR_RESET(1 << GPIOB_1WIRE)
+
+#define ONEWIRE_RELEASE() GPIOB->BSRR = BSRR_SET(1 << GPIOB_1WIRE)
+
+#define ONEWIRE_ISPULLDOWN() (!(GPIOB->IDR & (1 << GPIOB_1WIRE)))
+
+void onewireInit()
+{
+	RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
+	GPIOB->CRH = (GPIOB-> CRH & 0xFFFFFFF0) | GENERAL_OPEN_DRAIN_FAST;
+	GPIOB->ODR |= 1 << GPIOB_1WIRE;
+}
+
 bool onewireReset()
 {
 	//Master Tx Reset pulse
 	ONEWIRE_PULLDOWN();
 	delay_us(480);
 	ONEWIRE_RELEASE();
-	//DS18B20 Waits 15-60�s
+	//DS18B20 Waits 15-60us
 	delay_us(60);
 	bool ret = ONEWIRE_ISPULLDOWN();
 	//Master Rx
@@ -81,7 +96,7 @@ static void write0()
 static bool read()
 {
 	//start pulse
-	ONEWIRE_PULLDOWN()
+	ONEWIRE_PULLDOWN();
 	delay_us(1);
 	ONEWIRE_RELEASE();
 	//wait

@@ -4,10 +4,8 @@
 
 #define GPIOA_FANOFF   		1 << 15
 
-#define GPIOB_1WIRE  		1 << 0
+
 #define GPIOB_BTRESET 		1 << 1
-#define GPIOB_OLED_RESET    1 << 6
-#define GPIOB_OLED_DC       1 << 8
 #define GPIOB_LED_RED       1 << 7
 #define GPIOB_LED_GREEN     1 << 9
 #define GPIOB_BTLED2 		1 << 11
@@ -21,23 +19,18 @@
 #define GPIOC_BUTTON_DOWN	1 << 13
 
 #define BSRR_SET(i) i
-#define BSRR_RESET(i) i << 16
+#define BSRR_RESET(i) (i << 16)
 
+#define GENERAL_PUSH_PULL_FAST 0x3
+#define GENERAL_OPEN_DRAIN_FAST 0x7
+#define ALT_PUSH_PULL_FAST 0xB
+#define ALT_OPEN_DRAIN_FAST 0xF
+#define ANALOG 0
+#define INPUT_FLOATING 0x4
+#define INPUT_PULL 0x8
 //
 #define LED_SETRED() GPIOB->BSRR = BSRR_RESET(GPIOB_LED_GREEN) | BSRR_SET(GPIOB_LED_RED)
 #define LED_SETGREEN() GPIOB->BSRR = BSRR_SET(GPIOB_LED_GREEN) | BSRR_RESET(GPIOB_LED_RED)
-
-#define ONEWIRE_PULLDOWN()  {	\
-							GPIOB->CRL = (GPIOB->CRL & 0xFFFFFFF0) | 0x00000007; \
-							GPIOB->BSRR = BSRR_RESET(GPIOB_1WIRE);	\
-							}
-
-#define ONEWIRE_RELEASE()  {	\
-							GPIOB->CRL = (GPIOB->CRL & 0xFFFFFFF0) | 0x00000008; \
-							GPIOB->BSRR = BSRR_SET(GPIOB_1WIRE);	\
-							}
-
-#define ONEWIRE_ISPULLDOWN() (!(GPIOB->IDR & GPIOB_1WIRE))
 
 #define HC05_RESET_ON() GPIOB->BSRR = BSRR_RESET(GPIOB_BTRESET)
 #define HC05_RESET_OFF() GPIOB->BSRR = BSRR_SET(GPIOB_BTRESET)

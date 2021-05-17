@@ -16,6 +16,7 @@
 #define Command_ReadScratchpad 0xBE
 #define Command_WriteScratchpad 0x4E
 
+void onewireInit();
 bool onewireReset();
 void onewireWriteByte(uint8_t byte);
 uint8_t onewireReadByte();

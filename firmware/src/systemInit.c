@@ -1,30 +1,19 @@
+#include "configuration.h"
 #include "stm32f1xx.h"
 #include "lcd.h"
 #include "swo.h"
+#include "max31856.h"
 
 void systemCoreClockUpdate();
 
 void systemInit() {
 	//----- CLK -----
-	RCC->APB1ENR = RCC_APB1ENR_PWREN | RCC_APB1ENR_USART2EN | RCC_APB1ENR_TIM3EN | RCC_APB1ENR_TIM4EN; // | RCC_APB1ENR_SPI2EN | RCC_APB1ENR_PWREN;
-	RCC->APB2ENR = RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN | RCC_APB2ENR_IOPCEN | RCC_APB2ENR_SPI1EN | RCC_APB2ENR_AFIOEN | RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN | RCC_APB2ENR_TIM1EN; //
-	AFIO->MAPR = AFIO_MAPR_SPI1_REMAP | AFIO_MAPR_SWJ_CFG_1; //disable JTAG
-	//----- GPIO -----
-	//porta
-	GPIOA->CRH = 0x28844444;
-	GPIOA->CRL = 0x00000000;
-	GPIOA->ODR = 0x00002000;
-	//portb
-	GPIOB->CRH = 0x33314433;
-	GPIOB->CRL = 0x33B8B377;
-	GPIOB->ODR = 0x00000057;
-	//portc
-	GPIOC->CRH = 0x88800000;
-	GPIOC->CRL = 0x00000000;
-	GPIOC->ODR = 0x0000E000;
-	//----SPI - lcd----
-	SPI1->CR1 = SPI_CR1_SSI | SPI_CR1_SSM | SPI_CR1_SPE | SPI_CR1_MSTR | SPI_CR1_BR_1;
-	//----ADC1-----
+	//RCC->APB1ENR = RCC_APB1ENR_PWREN | RCC_APB1ENR_USART2EN | RCC_APB1ENR_TIM3EN | RCC_APB1ENR_TIM4EN; // | RCC_APB1ENR_SPI2EN | RCC_APB1ENR_PWREN;
+	//RCC->APB2ENR = RCC_APB2ENR_IOPAEN | RCC_APB2ENR_IOPBEN | RCC_APB2ENR_IOPCEN | RCC_APB2ENR_SPI1EN | RCC_APB2ENR_AFIOEN | RCC_APB2ENR_ADC1EN | RCC_APB2ENR_ADC2EN | RCC_APB2ENR_TIM1EN; //
+	AFIO->MAPR = AFIO_MAPR_SWJ_CFG_1; //disable JTAG
+	//
+
+	/*//----ADC1-----
 	ADC1->SMPR2 = 0x0002F000;
 	ADC1->CR2 = ADC_CR2_JEXTSEL | ADC_CR2_JEXTTRIG;
 	ADC1->CR1 |= ADC_CR1_SCAN | ADC_CR1_JEOCIE;
@@ -48,16 +37,12 @@ void systemInit() {
 	//TIM4->ARR = 993;
 	//TIM4->CR1 = TIM_CR1_ARPE | TIM_CR1_OPM;
 	//NVIC_EnableIRQ(TIM4_IRQn);
-	//----- systick -----
-	SysTick->LOAD = 72000000UL / 1000 - 1;
-	SysTick->VAL = 72000000UL / 1000 - 1;
-	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk;
+
 	//SWO
 	//swoInit();
+
 	//
-	displayInit();
-	//
-	systemCoreClockUpdate();
+
 	//ADC calibration
 	displayWriteText("Calibrating ADC", 0);
 	ADC2->CR2 |= ADC_CR2_CAL;
@@ -67,14 +52,27 @@ void systemInit() {
 	ADC1->CR2 |= ADC_CR2_JSWSTART;
 	ADC2->CR2 |= ADC_CR2_JSWSTART;
 	//
-	__enable_irq();
+
 	//
 	//iwdg
 	IWDG->KR = 0x5555;
 	IWDG->PR = 7;
 	IWDG->RLR = 1000 * 40 / 256;
 	IWDG->KR = 0xAAAA;
-	IWDG->KR = 0xCCCC;
+	IWDG->KR = 0xCCCC;*/
+	//
+	__enable_irq();
+	systickInit();
+	displayInit();
+	onewireInit();
+	adcInit();
+
+#ifdef MAX31856
+	max31856Init();
+#endif
+
+	//
+	systemCoreClockUpdate();
 	//
 	displayWriteText("Starting...", 0);
 }

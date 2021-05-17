@@ -1,7 +1,7 @@
 #pragma once
 
+#include <sensors.h>
 #include <stdint.h>
-#include "logic.h"
 
 #pragma pack(push, 1)
 

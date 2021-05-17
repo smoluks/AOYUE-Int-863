@@ -1,6 +1,6 @@
+#include <sensors.h>
 #include "stm32f1xx.h"
 #include "gpio.h"
-#include "logic.h"
 
 static uint8_t cycle;
 static uint8_t value;
@@ -37,7 +37,7 @@ void EXTI4_IRQHandler()
 		cycle = 0;
 		zeroweight = 0;
 		oneweight = 0;
-		value = getOutputLevel();
+		value = calculateNext();
 	}
 
 	EXTI->PR |= EXTI_PR_PR4;
