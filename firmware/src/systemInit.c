@@ -1,11 +1,17 @@
-#include "configuration.h"
+#include <hardwareConfig.h>
 #include "stm32f1xx.h"
 #include "lcd.h"
 #include "swo.h"
 #include "max31856.h"
+#include "adc.h"
+#include "18b20.h"
+#include "1wire.h"
+#include "systick.h"
+#include "uart.h"
+#include "modbus.h"
+#include "error.h"
 
-void systemCoreClockUpdate();
-
+static void systemCoreClockUpdate();
 void systemInit() {
 	//----- CLK -----
 	//RCC->APB1ENR = RCC_APB1ENR_PWREN | RCC_APB1ENR_USART2EN | RCC_APB1ENR_TIM3EN | RCC_APB1ENR_TIM4EN; // | RCC_APB1ENR_SPI2EN | RCC_APB1ENR_PWREN;
@@ -31,12 +37,7 @@ void systemInit() {
 	EXTI->RTSR = 0x00000010;
 	EXTI->FTSR = 0x00000010;
 	NVIC_EnableIRQ(EXTI4_IRQn);
-	//-----TIM4-----
-	//TIM4->DIER = TIM_DIER_UIE;
-	//TIM4->PSC = 720-1;
-	//TIM4->ARR = 993;
-	//TIM4->CR1 = TIM_CR1_ARPE | TIM_CR1_OPM;
-	//NVIC_EnableIRQ(TIM4_IRQn);
+
 
 	//SWO
 	//swoInit();
@@ -64,24 +65,39 @@ void systemInit() {
 	__enable_irq();
 	systickInit();
 	displayInit();
+    uart1Init();
+    modbusInit();
+    //
+    systemCoreClockUpdate();
+    //
+    displayWriteText("Sensors configuring", 0);
+#ifdef DS18B20
 	onewireInit();
+    init18b20();
+#endif
+
+#ifdef ANALOG_TC
 	adcInit();
+#endif
 
 #ifdef MAX31856
 	max31856Init();
 #endif
 
-	//
-	systemCoreClockUpdate();
-	//
 	displayWriteText("Starting...", 0);
 }
 
 void systemCoreClockUpdate() {
 	//start HSE
 	displayWriteText("Starting HSE", 0);
+    uint8_t count = 0;
 	RCC->CR = RCC_CR_HSEON;
-	while (!(RCC->CR & RCC_CR_HSERDY));
+	while (!(RCC->CR & RCC_CR_HSERDY) && ++count < 250);
+	if(count == 250)
+	{
+	    setError(ERR_CRYSTAL);
+	    return;
+	}
 
 	//configure
 	FLASH->ACR = FLASH_ACR_PRFTBE | FLASH_ACR_LATENCY_1;
@@ -89,12 +105,23 @@ void systemCoreClockUpdate() {
 
 	//start PLL
 	displayWriteText("Starting PLL", 0);
+    count = 0;
 	RCC->CR |= RCC_CR_PLLON;
-	while (!(RCC->CR & RCC_CR_PLLRDY));
+	while (!(RCC->CR & RCC_CR_PLLRDY) && ++count < 100);
+	if(count == 100)
+	{
+	    setError(ERR_PLL);
+        return;
+	}
 
 	//Switch to PLL
 	displayWriteText("Switch to PLL", 0);
+	count = 0;
 	RCC->CFGR = RCC->CFGR | RCC_CFGR_SW_PLL;
-	while ((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL);
+	while (((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL)  && ++count < 100);
+	if(count == 100)
+	{
+	    setError(ERR_PLL);
+        return;
+	}
 }
-

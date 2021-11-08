@@ -46,7 +46,7 @@ bool onewireIsDataReady()
 
 void onewireWriteByte(uint8_t byte)
 {
-	__disable_irq();
+	//__disable_irq();
 	for (uint8_t i = 0; i < 8; i++)
 	{
 		if (byte & 0x01)
@@ -56,20 +56,20 @@ void onewireWriteByte(uint8_t byte)
 
 		byte >>= 1;
 	}
-	__enable_irq();
+	//__enable_irq();
 }
 
 uint8_t onewireReadByte()
 {
 	uint8_t t;
 
-	__disable_irq();
+	//__disable_irq();
 	for (uint8_t i = 0; i < 8; i++)
 	{
 		t >>= 1;
 		t |= (read() << 7);
 	}
-	__enable_irq();
+	//__enable_irq();
 
 	return t;
 }

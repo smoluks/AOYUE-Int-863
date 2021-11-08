@@ -1,7 +1,7 @@
 #pragma once
 
-void uart2Init();
-void uart2GotoModbusMode();
-bool uart2SendAtCommand(char *command, char *buffer);
+void uart1Init();
+void uart1SetHC05ConfigMode();
+void uart1SetModbusMode();
 
-void USART2_IRQHandler();
+void USART1_IRQHandler();

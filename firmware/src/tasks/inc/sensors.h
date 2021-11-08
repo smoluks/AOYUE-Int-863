@@ -1,11 +1,13 @@
 #pragma once
 
 #include "stm32f1xx.h"
-
-#define SENSOR_COUNT 3
+#include "error.h"
+#include "hardwareConfig.h"
 
 typedef struct sensor {
     bool isPresent;
-    int16_t value;
+    dallasTemperature value;
+    sensor_error_t error;
 } sensor_s;
 
+void processSensors(void);

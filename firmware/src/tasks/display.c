@@ -9,6 +9,7 @@
 #include "systick.h"
 #include "pid.h"
 #include "main.h"
+#include "hardwareConfig.h"
 
 void update_work_mode();
 void update_current_temperature();
@@ -17,7 +18,7 @@ void update_selected_row();
 
 extern work_mode_e work_mode;
 extern int8_t selectedRow;
-extern sensor_s sensors[SENSOR_COUNT];
+extern sensor_s sensors[8];
 extern int16_t ambient_themperature;
 extern int16_t targets_temperature[SENSOR_COUNT];
 
@@ -45,15 +46,24 @@ void update_work_mode()
 	switch(work_mode)
 	{
 		case MODE_OFF:
-			displayWriteText("Ready", 0);
+		    displayWriteHalfText("Ready", 0, false);
 			break;
 		case MODE_HEAT:
-			displayWriteText("Heat", 0);
+		    displayWriteHalfText("Heat", 0, false);
 			break;
 		case MODE_COLD:
-			displayWriteText("Cool", 0);
+		    displayWriteHalfText("Cool", 0, false);
 			break;
 	}
+
+	if(getError())
+	{
+	    char buffer[5];
+	    snprintf(buffer, 5, "E%u", getError());
+	    displayWriteHalfText(buffer, 0, true);
+	}
+	else
+	    displayWriteHalfText("", 0, true);
 
 	if(selectedRow == 0)
 		displayWriteChar(17, 123, 0);
@@ -63,21 +73,21 @@ void update_current_temperature()
 {
 	char buffer[10];
 	char firstNumber = 'A';
-	for(uint8_t i = 0; i < 3; i++)
+	for(uint8_t i = 1; i < 4; i++)
 	{
 		if(i < SENSOR_COUNT)
 		{
 			if(sensors[i].isPresent)
 			{
-				snprintf(buffer, 10, "%c: %d%cC", firstNumber + i, sensors[i].value >> 4, (char)0xB0);
+				snprintf(buffer, 10, "%c: %d%cC", firstNumber + i - 1, sensors[i].value >> 4, (char)0xB0);
 			} else
 			{
-				snprintf(buffer, 10, "%c: Error", firstNumber + i);
+				snprintf(buffer, 10, "%c: E%u", firstNumber + i - 1, sensors[i].error);
 			}
-			displayWriteHalfText(buffer, 1 + i, false);
+			displayWriteHalfText(buffer, i, false);
 		} else
 		{
-			displayClearHalf(1 + i, false);
+			displayClearHalf(i, false);
 		}
 	}
 }

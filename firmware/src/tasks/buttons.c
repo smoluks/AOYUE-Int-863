@@ -5,6 +5,7 @@
 #include "pt.h"
 #include "pid.h"
 #include "systick.h"
+#include "hardwareConfig.h"
 
 PT_THREAD(processTimeout(struct pt *pt));
 PT_THREAD(processMenu(struct pt *pt));
@@ -19,7 +20,7 @@ static uint32_t timestamp;
 static struct pt ptTimeout, ptMenu, ptUp, ptDown;
 
 extern work_mode_e work_mode;
-extern uint16_t targets_temperature[SENSOR_COUNT];
+extern uint16_t targets_temperature[8];
 
 void initButtons()
 {

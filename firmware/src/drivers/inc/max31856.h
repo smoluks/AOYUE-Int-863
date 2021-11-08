@@ -1,7 +1,5 @@
 #pragma once
 
-#define MAX31856_COUNT 3
-
 void max31856Init();
 void max31856Read();
 

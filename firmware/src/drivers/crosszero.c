@@ -1,6 +1,7 @@
-#include <sensors.h>
 #include "stm32f1xx.h"
+#include "sensors.h"
 #include "gpio.h"
+#include "pid.h"
 
 static uint8_t cycle;
 static uint8_t value;

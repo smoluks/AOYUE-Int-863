@@ -5,10 +5,6 @@
 #define MODBUS_RECEIVE_BUFFER_SIZE 8
 #define MODBUS_TRANSMIT_BUFFER_SIZE HOLDING_REGS_COUNT * 2 + 5
 
-#define INPUT_REGS_COUNT 10
-#define HOLDING_REGS_COUNT 50
-#define COILS_COUNT 0
-
 typedef enum {
 	READ_COILS = 1,
 	READ_DISCRETE_INPUTS = 2,
@@ -32,6 +28,6 @@ typedef enum  {
 	MEMORY_PARITY_ERROR = 8,
 } modbus_errors_e;
 
-void modbusIdleHandler();
-void modbusTcHandler();
+void modbusInit();
+void modbusTxHandler();
 void modbusRxHandler();

@@ -14,6 +14,7 @@
 	while ((i--) != 0);  		\
 	}
 
+void systickInit();
 uint32_t getSystime();
 bool isTimeout(uint32_t timestamp, uint32_t delay);
 void delay(uint32_t delay);

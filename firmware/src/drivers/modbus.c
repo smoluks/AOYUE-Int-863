@@ -16,12 +16,29 @@ void sendError(modbus_command_e func, modbus_errors_e error) ;
 void addCrc();
 bool checkCrc();
 
-void modbusIdleHandler()
+void modbusInit()
 {
+    //timer for timeout
+    RCC->APB1ENR |= RCC_APB1ENR_TIM4EN;
+
+    //3.5 Sym - 315uS
+    TIM4->SR &= ~(TIM_SR_UIF);
+    TIM4->DIER = TIM_DIER_UIE;
+    TIM4->PSC = 72-1;
+    TIM4->ARR = 315;
+    TIM4->CR1 = TIM_CR1_ARPE | TIM_CR1_OPM;
+    NVIC_EnableIRQ(TIM4_IRQn);
+}
+
+//process packet
+void TIM4_IRQHandler()
+{
+    TIM4->SR &= ~TIM_SR_UIF;
+    (void) USART1->DR;
+
 	if ((inputbuffer[0] && inputbuffer[0] != MODBUS_ADDRESS) || !checkCrc())
 	{
-		(void) USART2->DR;
-		inputhandle = 0;
+	    inputhandle = 0;
 		return;
 	}
 
@@ -44,22 +61,30 @@ void modbusIdleHandler()
 	}
 	addCrc();
 
-	modbusTcHandler();
+	modbusTxHandler();
 	inputhandle = 0;
 }
 
-void modbusTcHandler() {
+void modbusTxHandler() {
 	if (outputhandle) {
-		USART2->DR = outputbuffer[--outputhandle];
+	    USART1->CR1 |= USART_CR1_TXEIE;
+		USART1->DR = outputbuffer[--outputhandle];
+	} else
+	{
+	    USART1->CR1 &= ~USART_CR1_TXEIE;
 	}
 }
 
+//all input save to buffer
 void modbusRxHandler() {
-	uint8_t i = USART2->DR;
+	uint8_t i = USART1->DR;
 
 	if (inputhandle < MODBUS_RECEIVE_BUFFER_SIZE) {
 		inputbuffer[inputhandle++] = i;
 	}
+
+	TIM4->CNT = 0;
+	TIM4->CR1 |= TIM_CR1_CEN;
 }
 
 /*void read_coils() {

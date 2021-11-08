@@ -25,7 +25,7 @@ void displayInit()
 	SPI2->CR1 = SPI_CR1_SSI | SPI_CR1_SSM | SPI_CR1_SPE | SPI_CR1_MSTR;// | SPI_CR1_BR_1;
 
 	GPIOB->CRH =
-			GPIOB->CRH & 0x0000FFFF |
+			(GPIOB->CRH & 0x0000FFFF) |
 			(ALT_PUSH_PULL_FAST << (7 * 4)) |
 			(GENERAL_PUSH_PULL_FAST << (6 * 4)) |
 			(ALT_PUSH_PULL_FAST << (5 * 4)) |

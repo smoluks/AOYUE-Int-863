@@ -25,7 +25,7 @@ uint32_t flashReadUInt32(uint32_t offset) {
 }
 
 void flashRead(uint8_t *data, uint32_t count) {
-	memcpy(data, PAGE_ADDRESS, count);
+	memcpy(data, (uint8_t*)PAGE_ADDRESS, count);
 }
 
 //page size - 1KB

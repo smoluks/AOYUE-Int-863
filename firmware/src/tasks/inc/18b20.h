@@ -9,4 +9,4 @@
 #define CONFIG_12BIT 0x7F
 
 bool init18b20();
-PT_THREAD(process18b20(struct pt *pt));
+void process18b20();

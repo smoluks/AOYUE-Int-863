@@ -2,14 +2,15 @@
 #include "pid.h"
 #include "sensors.h"
 #include "main.h"
+#include "hardwareConfig.h"
 
 uint8_t getHeatValue();
 uint8_t getColdValue();
 
 work_mode_e work_mode;
-int16_t targets_temperature[SENSOR_COUNT];
+int16_t targets_temperature[8];
 
-extern sensor_s sensors[SENSOR_COUNT];
+extern sensor_s sensors[8];
 
 //PID calculator
 uint8_t calculateNext()
