@@ -16,7 +16,7 @@ static uint8_t spiByteExchange(uint8_t data);
 extern sensor_s sensors[SENSOR_COUNT];
 
 #ifdef MAX31856_TAKE_AMBIENT
-static sensor_s ambients[3];
+    static sensor_s ambients[3];
 #endif
 
 void max31856Init() {
@@ -25,7 +25,7 @@ void max31856Init() {
     SPI1->CR1 = SPI_CR1_SSI | SPI_CR1_SSM | SPI_CR1_SPE | SPI_CR1_MSTR | SPI_CR1_BR_1 | SPI_CR1_BR_0 | SPI_CR1_CPOL | SPI_CR1_CPHA; // | SPI_CR1_DFF;
 
     //spi
-    GPIOA->BSRR |= 0x00000040;
+    GPIOA->BSRR = 0x00000040;
     GPIOA->CRL = (GPIOA->CRL & 0x000FFFFF)
                   | (ALT_PUSH_PULL_FAST << (5 * 4)) //mosi
                   | (INPUT_PULL << (6 * 4)) //miso

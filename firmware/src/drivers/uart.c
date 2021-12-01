@@ -28,7 +28,7 @@ void uart1SetHC05ConfigMode()
     USART1->CR1 = USART_CR1_UE | USART_CR1_TE | USART_CR1_RE;
 }
 
-//115200 ODD
+//115200 EVEN
 void uart1SetModbusMode()
 {
     USART1->CR1 &= ~USART_CR1_UE;
@@ -38,9 +38,9 @@ void uart1SetModbusMode()
     (void) USART1->SR;
     (void) USART1->DR;
     (void) USART1->DR;
-	USART1->CR1 = USART_CR1_UE | USART_CR1_TE | USART_CR1_RE | USART_CR1_M | USART_CR1_PCE | USART_CR1_PS | USART_CR1_RXNEIE;// | USART_CR1_IDLEIE;
+	USART1->CR1 = USART_CR1_UE | USART_CR1_TE | USART_CR1_RE | USART_CR1_M | USART_CR1_PCE | USART_CR1_RXNEIE;// | USART_CR1_IDLEIE;
 	NVIC_EnableIRQ(USART1_IRQn);
-	NVIC_SetPriority(USART1_IRQn, 0);
+	//NVIC_SetPriority(USART1_IRQn, 0);
 }
 
 void USART1_IRQHandler() {
@@ -50,6 +50,7 @@ void USART1_IRQHandler() {
 		//modbusIdleHandler();
 	//}
 
+#ifdef DEBUG_MODE
     if (sr & USART_SR_PE) {
         setError(ERR_UART_PARITY);
     }
@@ -59,6 +60,7 @@ void USART1_IRQHandler() {
     if (sr & USART_SR_NE) {
         setError(ERR_UART_NOISE);
     }
+#endif
 
 	if (sr & (USART_SR_RXNE | USART_SR_ORE)) {
 	    modbusRxHandler();

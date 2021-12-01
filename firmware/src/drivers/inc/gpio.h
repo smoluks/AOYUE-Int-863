@@ -2,6 +2,7 @@
 
 #include "stm32f1xx.h"
 
+//gpio bits
 #define BIT0 1<<0
 #define BIT1 1<<1
 #define BIT2 1<<2
@@ -18,20 +19,6 @@
 #define BIT13 1<<13
 #define BIT14 1<<14
 #define BIT15 1<<15
-
-
-
-#define GPIOB_LED_RED       1 << 7
-#define GPIOB_LED_GREEN     1 << 9
-#define GPIOB_BTLED2 		1 << 11
-
-#define GPIOB_OUT1		  	1 << 13
-#define GPIOB_OUT2  		1 << 14
-#define GPIOB_USB_EN 		1 << 15
-
-#define GPIOC_BUTTON_UP		1 << 15
-#define GPIOC_BUTTON_MENU	1 << 14
-#define GPIOC_BUTTON_DOWN	1 << 13
 
 #define BSRR_SET(i) i
 #define BSRR_RESET(i) (i << 16)
@@ -62,17 +49,6 @@
 #define GPIO13_CRH(x) (x << (5 * 4))
 #define GPIO14_CRH(x) (x << (6 * 4))
 #define GPIO15_CRH(x) (x << (7 * 4))
-
-#define LED_SETRED() GPIOB->BSRR = BSRR_RESET(GPIOB_LED_GREEN) | BSRR_SET(GPIOB_LED_RED)
-#define LED_SETGREEN() GPIOB->BSRR = BSRR_SET(GPIOB_LED_GREEN) | BSRR_RESET(GPIOB_LED_RED)
-
-
-#define IS_BUTTON_UP_PRESSED() (!(GPIOC->IDR & GPIOC_BUTTON_UP))
-#define IS_BUTTON_MENU_PRESSED() (!(GPIOC->IDR & GPIOC_BUTTON_MENU))
-#define IS_BUTTON_DOWN_PRESSED() (!(GPIOC->IDR & GPIOC_BUTTON_DOWN))
-
-#define OUT1_ON() GPIOB->BSRR = BSRR_SET(GPIOB_OUT1)
-#define OUT1_OFF() GPIOB->BSRR = BSRR_RESET(GPIOB_OUT1)
 
 void setIOBits(GPIO_TypeDef* port, uint16_t mask);
 void resetIOBits(GPIO_TypeDef* port, uint16_t mask);

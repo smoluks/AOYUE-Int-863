@@ -2,17 +2,19 @@
 #include "stm32f1xx.h"
 #include "modbus.h"
 #include "config.h"
-#include "pid.h"
 #include "main.h"
 #include "hardwareConfig.h"
 #include "modbusHandlers.h"
 #include "hc05.h"
+#include "logic.h"
+#include "bootloader.h"
 
 extern work_mode_e work_mode;
 extern sensor_s sensors[SENSOR_COUNT];
 extern config_s config;
 extern uint16_t targets_temperature[SENSOR_COUNT];
 extern bt_error_t bt_error;
+extern bool need_update_display;
 
 uint16_t getInputRegister(uint16_t address) {
     if(address == INPUT_REG_HC05_ERROR)
@@ -43,7 +45,7 @@ uint16_t getHoldingRegister(uint16_t address) {
     //targets
 	if (address <  HOLDING_REGS_DIFFLIMITS)
 	{
-		return targets_temperature[address - HOLDING_REGS_TARGETS];
+		return config.targets_temperature[address - HOLDING_REGS_TARGETS];
 	}
 
 	//speed targets
@@ -65,17 +67,21 @@ modbus_errors_e setHoldingRegister(uint16_t address, uint16_t value) {
     //mode
     if (address == HOLDING_REG_MODE)
     {
-        work_mode = value;
+        if(value > 2)
+            return ILLEGAL_DATA_VALUE;
+
+        setMode(value);
         return 0;
     }
 
     //targets
     if (address < HOLDING_REGS_DIFFLIMITS)
     {
-        if (value > 400)
+        if (value & 0X0FFF > MAXTEMP << 4)
             return ILLEGAL_DATA_VALUE;
 
-        targets_temperature[address - HOLDING_REGS_TARGETS] = value;
+        setTargetTemperature(address - HOLDING_REGS_TARGETS, value);
+
         return 0;
     }
 
@@ -90,7 +96,7 @@ modbus_errors_e setHoldingRegister(uint16_t address, uint16_t value) {
 	    else
 	        config.speedLimits[address / 2].heat = value;
 
-	    saveConfig();
+	    updateConfig();
 	    return 0;
 	}
 
@@ -102,8 +108,15 @@ modbus_errors_e setHoldingRegister(uint16_t address, uint16_t value) {
 	    else
 	        config.sensorCorrections[address / 2].additive = value;
 
-	    saveConfig();
+	    updateConfig();
 	    return 0;
+	}
+
+	if(address == HOLDING_REGS_GOTOBOOTLOADER)
+	{
+	    if(value == 0xb001)
+	        JumpToBootloader();
+	    else return ILLEGAL_DATA_VALUE;
 	}
 
 	return ILLEGAL_DATA_ADDRESS;

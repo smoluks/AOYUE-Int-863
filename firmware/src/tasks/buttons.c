@@ -3,9 +3,14 @@
 #include "stm32f1xx.h"
 #include "gpio.h"
 #include "pt.h"
-#include "pid.h"
 #include "systick.h"
 #include "hardwareConfig.h"
+
+#ifdef BUTTONS
+
+#define IS_BUTTON_UP_PRESSED() (!(GPIOC->IDR & GPIOC_BUTTON_UP))
+#define IS_BUTTON_MENU_PRESSED() (!(GPIOC->IDR & GPIOC_BUTTON_MENU))
+#define IS_BUTTON_DOWN_PRESSED() (!(GPIOC->IDR & GPIOC_BUTTON_DOWN))
 
 PT_THREAD(processTimeout(struct pt *pt));
 PT_THREAD(processMenu(struct pt *pt));
@@ -142,3 +147,4 @@ void down()
 	}
 }
 
+#endif

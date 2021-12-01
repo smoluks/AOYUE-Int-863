@@ -10,20 +10,22 @@
 #include "max31856.h"
 #include "sensors.h"
 #include "config.h"
-
-static struct pt indication_pt;
+#include "logic.h"
+#include "beeper.h"
 
 int main(void)
 {
-	PT_INIT(&indication_pt);
-
+    initLogic();
 	initConfig();
 
 #ifdef HC05
 	hc05Init();
 #endif
 
+	initBeeper();
+	initIndication();
 	//initButtons();
+    crossZeroInit();
 
 	while (1)
 	{
@@ -33,7 +35,13 @@ int main(void)
 
 		processSensors();
 
-		process_indication(&indication_pt);
+		processIndication();
+
+		processBeeper();
+
+		processLogic();
+
+		processConfig();
 	}
 }
 

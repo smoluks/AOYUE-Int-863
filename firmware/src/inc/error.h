@@ -8,6 +8,10 @@ typedef enum
 	ERR_UART_PARITY = 3,
 	ERR_UART_OVERRUN = 4,
 	ERR_UART_NOISE = 5,
+	ERR_I2C = 6,
+	ERR_POWER_FREQ_HIGH = 7,
+	ERR_NO_POWER_FREQ = 8,
+	ERR_HARDFAULT = 9,
 } error_t;
 
 typedef enum

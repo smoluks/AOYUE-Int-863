@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include "stm32f1xx.h"
 #include "modbus.h"
 #include "modbusHandlers.h"
@@ -36,7 +35,9 @@ void TIM4_IRQHandler()
     TIM4->SR &= ~TIM_SR_UIF;
     (void) USART1->DR;
 
-	if ((inputbuffer[0] && inputbuffer[0] != MODBUS_ADDRESS) || !checkCrc())
+	if (!inputhandle
+	        || (inputbuffer[0] && inputbuffer[0] != MODBUS_ADDRESS)
+	        || !checkCrc())
 	{
 	    inputhandle = 0;
 		return;

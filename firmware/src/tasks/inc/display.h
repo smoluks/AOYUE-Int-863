@@ -2,4 +2,5 @@
 
 #include "pt.h"
 
-PT_THREAD(process_indication(struct pt *pt));
+void initIndication();
+void processIndication();

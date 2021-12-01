@@ -22,6 +22,7 @@ typedef struct
 typedef struct
 {
 	uint32_t writeToken;
+	int16_t targets_temperature[SENSOR_COUNT];
 	tempspeed_s speedLimits[SENSOR_COUNT];
 	correction_s sensorCorrections[SENSOR_COUNT];
 	uint16_t crc;
@@ -30,4 +31,6 @@ typedef struct
 #pragma pack(pop)
 
 void initConfig();
+void processConfig();
 void saveConfig();
+void updateConfig();
