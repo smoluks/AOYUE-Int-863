@@ -4,3 +4,4 @@
 
 void initIndication();
 void processIndication();
+void updateDisplay();

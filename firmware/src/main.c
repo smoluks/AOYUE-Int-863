@@ -25,7 +25,6 @@ int main(void)
 	initBeeper();
 	initIndication();
 	//initButtons();
-    crossZeroInit();
 
 	while (1)
 	{

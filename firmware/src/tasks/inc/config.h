@@ -8,8 +8,8 @@
 
 typedef struct
 {
-	int8_t heat; //degree by seconds
-	int8_t cold;
+    lilDallasTemperature heat_speed; //by seconds
+    lilDallasTemperature cool_speed; //by seconds
 } tempspeed_s;
 
 typedef struct

@@ -51,7 +51,7 @@ uint16_t getHoldingRegister(uint16_t address) {
 	//speed targets
 	if (address < HOLDING_REGS_CORRECTIONS) {
 		address = address - HOLDING_REGS_DIFFLIMITS;
-		return address & 0x01 ? config.speedLimits[address / 2].cold : config.speedLimits[address / 2].heat;
+		return address & 0x01 ? config.speedLimits[address / 2].cool_speed : config.speedLimits[address / 2].heat_speed;
 	}
 
 	//sensor corrections
@@ -77,7 +77,7 @@ modbus_errors_e setHoldingRegister(uint16_t address, uint16_t value) {
     //targets
     if (address < HOLDING_REGS_DIFFLIMITS)
     {
-        if (value & 0X0FFF > MAXTEMP << 4)
+        if ((value & 0X0FFF) > (MAXTEMP << 4))
             return ILLEGAL_DATA_VALUE;
 
         setTargetTemperature(address - HOLDING_REGS_TARGETS, value);
@@ -92,9 +92,9 @@ modbus_errors_e setHoldingRegister(uint16_t address, uint16_t value) {
 
 	    address = address - HOLDING_REGS_DIFFLIMITS;
 	    if(address & 0x01)
-	        config.speedLimits[address / 2].cold = value;
+	        config.speedLimits[address / 2].cool_speed = value;
 	    else
-	        config.speedLimits[address / 2].heat = value;
+	        config.speedLimits[address / 2].heat_speed = value;
 
 	    updateConfig();
 	    return 0;

@@ -39,6 +39,11 @@ void processIndication()
     processIndicationInternal(&indication_pt);
 }
 
+void updateDisplay()
+{
+    need_update_display = true;
+}
+
 static PT_THREAD(processIndicationInternal(struct pt *pt))
 {
 	PT_BEGIN(pt);
@@ -96,7 +101,7 @@ void update_current_temperature()
 		{
 			if(sensors[i].isPresent)
 			{
-				snprintf(buffer, 10, "%c: %d%cC     ", firstNumber + i, sensors[i].value >> 4, (char)0xB0);
+				snprintf(buffer, 10, "%c: %d%cC   ", firstNumber + i, sensors[i].value >> 4, (char)0xB0);
 			} else
 			{
 				snprintf(buffer, 10, "%c: E%u", firstNumber + i, sensors[i].error);
@@ -116,7 +121,7 @@ void update_target_temperature()
 	{
 		if(i < SENSOR_COUNT && (config.targets_temperature[i] & 0xF000))
 		{
-		    snprintf(buffer, 10, "%c %d%cC     ", 16, (config.targets_temperature[i] & 0x0FFF) >> 4, (char)0xB0);
+		    snprintf(buffer, 10, "%c %d%cC   ", 16, (config.targets_temperature[i] & 0x3FFF) >> 4, (char)0xB0);
 		    displayWriteHalfText(buffer, i + 1, true);
 
 		    //if(selectedRow == i + 1)

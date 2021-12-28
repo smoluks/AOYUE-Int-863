@@ -12,6 +12,7 @@ typedef enum
 	ERR_POWER_FREQ_HIGH = 7,
 	ERR_NO_POWER_FREQ = 8,
 	ERR_HARDFAULT = 9,
+	ERR_MAXTEMP = 10,
 } error_t;
 
 typedef enum

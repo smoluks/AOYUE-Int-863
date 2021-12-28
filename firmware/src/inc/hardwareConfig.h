@@ -3,6 +3,7 @@
 
 //12 integer bits, 4 fractional bits as 18b20 output
 typedef int16_t dallasTemperature;
+typedef int8_t lilDallasTemperature;
 
 #define SENSOR_COUNT 4
 
@@ -10,6 +11,8 @@ typedef int16_t dallasTemperature;
 #define SENSOR_B 1
 #define SENSOR_C 2
 #define SENSOR_D 3
+
+#define CHANNEL_COUNT 2
 
 #define MAXTEMP 400
 

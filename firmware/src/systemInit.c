@@ -1,4 +1,5 @@
 #include <hardwareConfig.h>
+#include <output.h>
 #include "stm32f1xx.h"
 #include "lcd.h"
 #include "swo.h"
@@ -11,7 +12,6 @@
 #include "modbus.h"
 #include "error.h"
 #include "i2c.h"
-#include "crosszero.h"
 
 static void systemCoreClockUpdate();
 
@@ -68,6 +68,8 @@ void systemInit() {
 #ifdef MAX31856
 	max31856Init();
 #endif
+
+    crossZeroInit();
 
 	displayWriteText("Starting...", 0);
 }
