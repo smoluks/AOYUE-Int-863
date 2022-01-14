@@ -1,10 +1,15 @@
 ## Controller for PCB preheater soldering station.
 Main CPU: STM32F103C8
+
 Display: OLED 12864
+
 Input: 3 thermocouple K-type
+
 Output: 2 dimmable channel
 
+
 PCB software: diptrace 4
+
 FW software: CubeIDE 1.7.0
 
 ![Front](/docs/img/front.png)
