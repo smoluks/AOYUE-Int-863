@@ -24,13 +24,13 @@ int main(void)
 
 	initBeeper();
 	initIndication();
-	//initButtons();
+	initButtons();
 
 	while (1)
 	{
 		WDT_RESET();
 
-		//processButtons();
+		processButtons();
 
 		processSensors();
 

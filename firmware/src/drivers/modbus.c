@@ -116,7 +116,7 @@ void readInputRegisters() {
 
 	outputhandle = 2;
 	for (int16_t i = startaddress + count - 1; i >= startaddress; i--) {
-		uint16_t value = getInputRegister(startaddress + i);
+		uint16_t value = getInputRegister(i);
 
 		outputbuffer[outputhandle++] = value;
 		outputbuffer[outputhandle++] = value >> 8;
@@ -139,7 +139,7 @@ void readHoldingRegisters() {
 
 	outputhandle = 2;
 	for (int16_t i = startaddress + count - 1; i >= startaddress; i--) {
-		uint16_t value = getHoldingRegister(startaddress + i);
+		uint16_t value = getHoldingRegister(i);
 
 		outputbuffer[outputhandle++] = value;
 		outputbuffer[outputhandle++] = value >> 8;

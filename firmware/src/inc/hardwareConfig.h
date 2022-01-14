@@ -6,13 +6,16 @@ typedef int16_t dallasTemperature;
 typedef int8_t lilDallasTemperature;
 
 #define SENSOR_COUNT 4
+#if SENSOR_COUNT > 8
+    #error Remap modbus registers
+#endif
 
 #define SENSOR_A 0
 #define SENSOR_B 1
 #define SENSOR_C 2
 #define SENSOR_D 3
 
-#define CHANNEL_COUNT 2
+#define OUT_COUNT 2
 
 #define MAXTEMP 400
 

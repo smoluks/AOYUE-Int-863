@@ -14,7 +14,7 @@ class LastDeviceStorage {
     try {
       //check address saved
       final value = prefs.getInt(typeKey);
-      if (value == null) {
+      if (value == null || value == -1) {
         return null;
       }
 
@@ -41,5 +41,17 @@ class LastDeviceStorage {
     }
   }
 
-  static SaveLastDevice(device) {}
+  static saveLastDevice(Device device) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    prefs.setInt(typeKey, device.type.index);
+    prefs.setString(identifierKey, device.address);
+    prefs.setString(nameKey, device.name);
+  }
+
+  static Future<void> clearLastDevice() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    prefs.setInt(typeKey, -1);
+  }
 }

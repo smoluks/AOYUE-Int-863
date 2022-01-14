@@ -46,13 +46,28 @@ void restoreDefaultConfig()
     memset((uint8_t*) &config, 0, sizeof(config));
 
     config.writeToken = TOKEN;
+
     for(uint8_t i = 0; i < SENSOR_COUNT; i++)
     {
         config.sensorCorrections[i].additive = 0;
         config.sensorCorrections[i].multiplicative = 1 << 4;
     }
-}
+    config.ambientCorrection.additive = 0;
+    config.ambientCorrection.multiplicative = 1 << 4;
 
+    for(uint8_t i = 0; i < OUT_COUNT; i++)
+    {
+        config.pidCoef[i].P = 100;
+        config.pidCoef[i].PHeatDiff = 2;
+        config.pidCoef[i].PColdDiff = 2;
+        config.pidCoef[i].I = 0;
+        config.pidCoef[i].Imin = -250;
+        config.pidCoef[i].Imax = 250;
+        config.pidCoef[i].D = 10;
+    }
+
+    config.beepEnable = 1;
+}
 
 void updateConfig()
 {
@@ -65,7 +80,8 @@ static PT_THREAD(processConfigInternal(struct pt *pt))
 
     PT_WAIT_UNTIL(pt, config_need_save);
     config_need_save = false;
-    /*uint8_t addr = 0;
+
+    uint8_t addr = 0;
     uint8_t* newConfig = (uint8_t*) &config;
     uint8_t* oldConfig = (uint8_t*) &config_backup;
 
@@ -80,12 +96,13 @@ static PT_THREAD(processConfigInternal(struct pt *pt))
         addr++;
         newConfig++;
         oldConfig++;
-    }*/
+    }
 
     config.crc = crc16((uint8_t*) &config, sizeof(config) - 2);
-    //i2cWrite(sizeof(config) - 2, config.crc);
-    //i2cWrite(sizeof(config) - 1, config.crc >> 8);
-    i2cWriteBuffer(0, (uint8_t*) &config, sizeof(config));
+    i2cWrite(sizeof(config) - 2, config.crc);
+    i2cWrite(sizeof(config) - 1, config.crc >> 8);
+
+    //i2cWriteBuffer(0, (uint8_t*) &config, sizeof(config));
 
     PT_END(pt);
 }

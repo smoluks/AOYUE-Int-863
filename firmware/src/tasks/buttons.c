@@ -5,12 +5,14 @@
 #include "pt.h"
 #include "systick.h"
 #include "hardwareConfig.h"
+#include "buttons.h"
+#include "logic.h"
 
-#ifdef BUTTONS
+//#ifdef BUTTONS
 
-#define IS_BUTTON_UP_PRESSED() (!(GPIOC->IDR & GPIOC_BUTTON_UP))
-#define IS_BUTTON_MENU_PRESSED() (!(GPIOC->IDR & GPIOC_BUTTON_MENU))
-#define IS_BUTTON_DOWN_PRESSED() (!(GPIOC->IDR & GPIOC_BUTTON_DOWN))
+#define IS_BUTTON_UP_PRESSED() (!(GPIOA->IDR & BIT0))
+#define IS_BUTTON_MENU_PRESSED() (!(GPIOA->IDR & BIT0))
+#define IS_BUTTON_DOWN_PRESSED() (!(GPIOA->IDR & BIT0))
 
 PT_THREAD(processTimeout(struct pt *pt));
 PT_THREAD(processMenu(struct pt *pt));
@@ -29,18 +31,18 @@ extern uint16_t targets_temperature[8];
 
 void initButtons()
 {
-	PT_INIT(&ptTimeout);
+	//PT_INIT(&ptTimeout);
 	PT_INIT(&ptMenu);
-	PT_INIT(&ptUp);
-	PT_INIT(&ptDown);
+	//PT_INIT(&ptUp);
+	//PT_INIT(&ptDown);
 }
 
 void processButtons() {
 
-	processTimeout(&ptTimeout);
+	//processTimeout(&ptTimeout);
 	processMenu(&ptMenu);
-	processUp(&ptUp);
-	processDown(&ptDown);
+	//processUp(&ptUp);
+	//processDown(&ptDown);
 }
 
 PT_THREAD(processTimeout(struct pt *pt)) {
@@ -48,7 +50,7 @@ PT_THREAD(processTimeout(struct pt *pt)) {
 
 	PT_WAIT_UNTIL(pt, selectedRow != -1 && isTimeout(timestamp, 15000));
 
-	selectedRow = -1;
+	//selectedRow = -1;
 
 	PT_END(pt);
 }
@@ -58,13 +60,18 @@ PT_THREAD(processMenu(struct pt *pt)) {
 
 	PT_WAIT_UNTIL(pt, IS_BUTTON_MENU_PRESSED());
 
-	selectedRow++;
-	if (selectedRow > SENSOR_COUNT)
-		selectedRow = 0;
+	//selectedRow++;
+	//if (selectedRow > SENSOR_COUNT)
+	//	selectedRow = 0;
 
-	timestamp = getSystime();
+	//timestamp = getSystime();
+
+	setNextMode();
 
 	PT_WAIT_WHILE(pt, IS_BUTTON_MENU_PRESSED());
+
+	timestamp = getSystime();
+	PT_WAIT_UNTIL(pt, isTimeout(timestamp, 20));
 
 	PT_END(pt);
 }
@@ -74,17 +81,17 @@ PT_THREAD(processUp(struct pt *pt)) {
 
 	PT_WAIT_UNTIL(pt, IS_BUTTON_UP_PRESSED());
 
-	up();
+	//up();
 
-	timestamp = getSystime();
-	PT_WAIT_WHILE(pt, IS_BUTTON_UP_PRESSED() && !isTimeout(timestamp, 2000));
-	while(IS_BUTTON_UP_PRESSED())
-	{
-		up();
-
-		timestamp = getSystime();
-		PT_WAIT_UNTIL(pt, !IS_BUTTON_UP_PRESSED() || isTimeout(timestamp, 20));
-	}
+	//timestamp = getSystime();
+	//PT_WAIT_WHILE(pt, IS_BUTTON_UP_PRESSED() && !isTimeout(timestamp, 2000));
+	//while(IS_BUTTON_UP_PRESSED())
+	//{
+	//	up();
+	//
+	//	timestamp = getSystime();
+	//	PT_WAIT_UNTIL(pt, !IS_BUTTON_UP_PRESSED() || isTimeout(timestamp, 20));
+	//}
 
 	PT_END(pt);
 }
@@ -147,4 +154,4 @@ void down()
 	}
 }
 
-#endif
+//#endif

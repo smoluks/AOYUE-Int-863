@@ -1,17 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
+import '/pages/device_page.dart';
+import '/pages/bluetooth_discovery_page.dart';
 import '/dto/device.dart';
 import '/enums/connection_type.dart';
-import '/helpers/dialog_helper.dart';
+import '../modals/dialog_helper.dart';
 import '/helpers/last_device_storage.dart';
 import '/helpers/permission_helper.dart';
-import 'bluetooth_discovery_page.dart';
-
-//import 'BluetoothDiscoveryPage.dart';
-//import 'Dto/Device.dart';
-//import 'Helpers/DialogHelper.dart';
-//import 'SensorsPage.dart';
 
 class SelectConnTypePage extends StatefulWidget {
   const SelectConnTypePage({Key? key}) : super(key: key);
@@ -56,7 +51,7 @@ class _SelectConnTypePage extends State<SelectConnTypePage> {
 
     //connect
     if (device != null) {
-      await LastDeviceStorage.SaveLastDevice(device);
+      await LastDeviceStorage.saveLastDevice(device);
       useDevice(device);
     }
   }
@@ -65,14 +60,14 @@ class _SelectConnTypePage extends State<SelectConnTypePage> {
     if (device.type == ConnectionType.bt &&
         !(await PermissionHelper.tryGetPermissionForBT(context))) return;
 
-    /*bool success =
+    bool? success =
         await Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-      //return SensorsPage(device: device);
+      return DevicePage(device);
     }));
 
-    if (success != null && !success) {
-      prefs.setInt("last_conn_type", -1);
-    }*/
+    if (success == false) {
+      await LastDeviceStorage.clearLastDevice();
+    }
   }
 
   @override

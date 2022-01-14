@@ -17,8 +17,7 @@
 
 #define BOTH_OFF() GPIOB->BSRR = BSRR_SET(BIT4) | BSRR_RESET(BIT5)
 
-uint16_t channel1 = 0;
-uint16_t channel2 = 0;
+output_s outputs = {0, 0};
 
 extern config_s config;
 
@@ -81,15 +80,15 @@ inline void emergencyDisableAll()
 
 //cross-zero
 static volatile bool processed = true;
-static uint32_t timestamp;
-static uint32_t freq;
+//static uint32_t timestamp;
+//static uint32_t freq;
 void EXTI9_5_IRQHandler() {
     EXTI->PR |= EXTI_PR_PR9;
 
-    freq = getSystime() - timestamp;
-    timestamp = getSystime();
+    //freq = getSystime() - timestamp;
+    //timestamp = getSystime();
 
-    config.targets_temperature[1] = 0xC000 | (freq << 4);
+    //config.targetTemperatures[1] = 0xC000 | (freq << 4);
 
     BOTH_OFF();
 
@@ -103,28 +102,28 @@ void EXTI9_5_IRQHandler() {
     //---first---
     TIM1->CR1 &= ~TIM_CR1_CEN;
     TIM1->CNT = 0;
-    if (channel1 >= 1024)
+    if (outputs.channel1 >= 1024)
     {
         OUT1_ON();
-    } else if (channel1 > 0)
+    } else if (outputs.channel1 > 0)
     {
         //start on timer
         TIM1->SR &= ~TIM_SR_UIF;
-        TIM1->ARR = phaseTable[channel1];
+        TIM1->ARR = phaseTable[outputs.channel1];
         TIM1->CR1 |= TIM_CR1_CEN;
     }
 
     //---second---
     TIM2->CR1 &= ~TIM_CR1_CEN;
     TIM2->CNT = 0;
-    if (channel2 >= 1024)
+    if (outputs.channel2 >= 1024)
     {
         OUT2_ON();
-    } else if (channel2 > 0)
+    } else if (outputs.channel2 > 0)
     {
         //start on timer
         TIM2->SR &= ~TIM_SR_UIF;
-        TIM2->ARR = phaseTable[channel2];
+        TIM2->ARR = phaseTable[outputs.channel2];
         TIM2->CR1 |= TIM_CR1_CEN;
     }
 
@@ -152,7 +151,7 @@ void TIM2_IRQHandler() {
 void TIM3_IRQHandler() {
     TIM3->SR &= ~TIM_SR_UIF;
 
-    calculateOutput();
+    outputs = calculateOutput();
 
     processed = true;
 }

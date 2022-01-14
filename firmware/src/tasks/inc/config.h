@@ -8,8 +8,8 @@
 
 typedef struct
 {
-    lilDallasTemperature heat_speed; //by seconds
-    lilDallasTemperature cool_speed; //by seconds
+    lilDallasTemperature heatSpeed; //by seconds
+    lilDallasTemperature coolSpeed; //by seconds
 } tempspeed_s;
 
 typedef struct
@@ -18,13 +18,27 @@ typedef struct
 	dallasTemperature multiplicative;
 } correction_s;
 
-//padding to 2 bytes
+typedef struct
+{
+    int16_t P;
+    int16_t PHeatDiff;
+    int16_t PColdDiff;
+    int16_t I;
+    int16_t Imin;
+    int16_t Imax;
+    int16_t D;
+} pid_s;
+
+//padding to 2 bytes for 16-bit flash
 typedef struct
 {
 	uint32_t writeToken;
-	int16_t targets_temperature[SENSOR_COUNT];
+	int16_t targetTemperatures[SENSOR_COUNT];
 	tempspeed_s speedLimits[SENSOR_COUNT];
 	correction_s sensorCorrections[SENSOR_COUNT];
+	correction_s ambientCorrection;
+	pid_s pidCoef[OUT_COUNT];
+	uint16_t beepEnable;
 	uint16_t crc;
 } config_s;
 

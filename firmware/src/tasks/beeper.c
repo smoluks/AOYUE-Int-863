@@ -2,8 +2,11 @@
 #include "gpio.h"
 #include "systick.h"
 #include "pt.h"
+#include "config.h"
 
 static PT_THREAD(processBeeperInternal(struct pt *pt));
+
+extern config_s config;
 
 static struct pt beeper_pt;
 static bool makeBeep = false;
@@ -28,11 +31,16 @@ void beep() {
     makeBeep = true;
 }
 
+void emergencyBeep()
+{
+    BEEP_ON();
+}
+
 static uint32_t timestamp;
 static PT_THREAD(processBeeperInternal(struct pt *pt)) {
     PT_BEGIN(pt)
     ;
-
+    PT_WAIT_UNTIL(pt, config.beepEnable);
     PT_WAIT_UNTIL(pt, makeBeep);
     makeBeep = false;
 

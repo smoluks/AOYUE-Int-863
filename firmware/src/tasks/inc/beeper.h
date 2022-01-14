@@ -3,3 +3,4 @@
 void initBeeper();
 void processBeeper();
 void beep();
+void emergencyBeep();

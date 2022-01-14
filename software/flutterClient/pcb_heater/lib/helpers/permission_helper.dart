@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
-import 'package:pcb_heater/helpers/dialog_helper.dart';
+import 'package:pcb_heater/modals/dialog_helper.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class PermissionHelper {

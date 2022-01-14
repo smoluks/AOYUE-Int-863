@@ -119,9 +119,9 @@ void update_target_temperature()
 	char buffer[10];
 	for(uint8_t i = 0; i < 3; i++)
 	{
-		if(i < SENSOR_COUNT && (config.targets_temperature[i] & 0xF000))
+		if(i < SENSOR_COUNT && (config.targetTemperatures[i] & 0xF000))
 		{
-		    snprintf(buffer, 10, "%c %d%cC   ", 16, (config.targets_temperature[i] & 0x3FFF) >> 4, (char)0xB0);
+		    snprintf(buffer, 10, "%c %d%cC   ", 16, (config.targetTemperatures[i] & 0x3FFF) >> 4, (char)0xB0);
 		    displayWriteHalfText(buffer, i + 1, true);
 
 		    //if(selectedRow == i + 1)

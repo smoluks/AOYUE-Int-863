@@ -1,9 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
-import 'package:pcb_heater/dto/device.dart';
-import 'package:pcb_heater/enums/connection_type.dart';
-import 'package:pcb_heater/helpers/Spinner.dart';
+import '/helpers/log.dart';
+import '/dto/device.dart';
+import '/enums/connection_type.dart';
+import '/modals/Spinner.dart';
 
 class BluetoothDeviceListEntry {
   BluetoothDevice device;
@@ -60,7 +61,7 @@ class _BluetoothDiscoveryPage extends State<BluetoothDiscoveryPage> {
         _addDevice(result.device, result.rssi);
       });
     } catch (ex) {
-      print('startDiscovery failed: $ex');
+      Log.write('startDiscovery failed: $ex');
       Navigator.of(context).pop(null);
     }
 
@@ -106,7 +107,7 @@ class _BluetoothDiscoveryPage extends State<BluetoothDiscoveryPage> {
       bonded = await FlutterBluetoothSerial.instance
           .bondDeviceAtAddress(f.device.address);
     } catch (e) {
-      print("Error occured while bonding : ${e.toString()}");
+      Log.write("Error occured while bonding : ${e.toString()}");
     } finally {
       spinner.hide();
       _isBonding = false;

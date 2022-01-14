@@ -9,7 +9,7 @@
 #include "systick.h"
 #include "display.h"
 
-static int32_t getPidValue(uint8_t channel);
+static int32_t getPidValue(uint8_t out, uint8_t channel);
 static uint16_t normalize(int32_t rawPIDValue);
 static void resetPIDState(uint8_t channel);
 
@@ -18,9 +18,9 @@ static void resetPIDState(uint8_t channel);
 #define LED_SETORANGE() GPIOC->BSRR = BSRR_SET(BIT14) | BSRR_SET(BIT13)
 #define LED_SETOFF() GPIOC->BSRR = BSRR_RESET(BIT14) | BSRR_RESET(BIT13)
 
-#define CH1_FLAG 0x4000
-#define CH2_FLAG 0x8000
-#define CH_ANY_FLAG (CH1_FLAG | CH2_FLAG)
+#define OUT1_FLAG 0x4000
+#define OUT2_FLAG 0x8000
+#define OUT_ANY_FLAG (OUT1_FLAG | OUT2_FLAG)
 
 extern config_s config;
 
@@ -54,7 +54,10 @@ void processLogic() {
 
     //beep
     for (int i = 0; i < SENSOR_COUNT; i++) {
-        if (beep_enable && sensors[i].isPresent && (config.targets_temperature[i] & CH_ANY_FLAG) && (sensors[i].value & 0x3FF0) == (config.targets_temperature[i] & 0x3FF0)) {
+        if (beep_enable && sensors[i].isPresent &&
+                (config.targetTemperatures[i] & OUT_ANY_FLAG) &&
+                work_mode == MODE_HEAT &&
+                sensors[i].value >= (config.targetTemperatures[i] & 0x3FFF)) {
             beep();
             beep_enable = false;
         }
@@ -63,6 +66,7 @@ void processLogic() {
     //cross-zero timeout check
     if (timestamp_inited && isTimeout(pid_timestamp, 100)) {
         emergencyDisableAll();
+        emergencyBeep();
         setError(ERR_NO_POWER_FREQ);
     }
 
@@ -71,6 +75,7 @@ void processLogic() {
         if(sensors[i].value >= MAXTEMP << 4)
         {
             emergencyDisableAll();
+            emergencyBeep();
             setError(ERR_MAXTEMP);
         }
     }
@@ -91,15 +96,22 @@ void setMode(work_mode_e mode) {
             break;
     }
 
-    beep_enable = true;
+    beep_enable = mode != MODE_OFF;
 
     updateDisplay();
 }
 
+void setNextMode()
+{
+    work_mode = work_mode == MODE_COLD ? MODE_OFF : work_mode + 1;
+    beep_enable = work_mode != MODE_OFF;
+    updateDisplay();
+}
+
 void setTargetTemperature(uint8_t channel, int16_t value) {
-    config.targets_temperature[channel] = value;
+    config.targetTemperatures[channel] = value;
     resetPIDState(channel);
-    beep_enable = true;
+    beep_enable = work_mode != MODE_OFF;
     updateDisplay();
     updateConfig();
 }
@@ -117,21 +129,21 @@ output_s calculateOutput() {
         int32_t channel2_value = 0x7FFFFFFF;
 
         for (int i = 0; i < SENSOR_COUNT; i++) {
-            if (!sensors[i].isPresent || !(config.targets_temperature[i] & 0xC000))
+            if (!sensors[i].isPresent || !(config.targetTemperatures[i] & OUT_ANY_FLAG))
                 continue;
 
             //first
-            if(config.targets_temperature[i] & 0x4000)
+            if(config.targetTemperatures[i] & 0x4000)
             {
-                int32_t value = getPidValue(i, 0);
+                int32_t value = getPidValue(0, i);
                 if(value < channel1_value)
                     channel1_value = value;
             }
 
             //second
-            if(config.targets_temperature[i] & 0x8000)
+            if(config.targetTemperatures[i] & 0x8000)
             {
-                int32_t value = getPidValue(i, 1);
+                int32_t value = getPidValue(1, i);
                 if(value < channel2_value)
                     channel2_value = value;
             }
@@ -144,57 +156,47 @@ output_s calculateOutput() {
     return result;
 }
 
-#define P 100
-#define P_HEATDIFF 2
-#define P_COLDDIFF 2
-
-#define I 0
-#define IMAX 250 * 256
-#define IMIN -250 * 256
-
-#define D 10
-
-int32_t iCache[SENSOR_COUNT];
-int32_t oldValue[SENSOR_COUNT];
-static int32_t getPidValue(uint8_t channel)
+int32_t iCache[OUT_COUNT][SENSOR_COUNT];
+int32_t oldValue[OUT_COUNT][SENSOR_COUNT];
+static int32_t getPidValue(uint8_t out, uint8_t channel)
 {
     int32_t result = 0;
 
     //P
-    int32_t targetDiff = (config.targets_temperature[channel] & 0x3FFF) - sensors[channel].value;
-    result = targetDiff * P;
+    int32_t targetDiff = (config.targetTemperatures[channel] & 0x3FFF) - sensors[channel].value;
+    result = targetDiff * config.pidCoef[out].P;
 
     //I
-    iCache[channel] += targetDiff;
+    iCache[out][channel] += targetDiff;
 
-    if(iCache[channel] > IMAX)
-        iCache[channel] = IMAX;
-    if(iCache[channel] < IMIN)
-        iCache[channel] = IMIN;
+    if(iCache[out][channel] > config.pidCoef[out].Imax * 256)
+        iCache[out][channel] = config.pidCoef[out].Imax * 256;
+    if(iCache[out][channel] < config.pidCoef[out].Imin * 256)
+        iCache[out][channel] = config.pidCoef[out].Imin * 256;
 
-    result += iCache[channel] * I;
+    result += iCache[out][channel]* config.pidCoef[out].I;
 
     //D
-    int32_t historyDiff = sensors[channel].value - oldValue[channel];
-    oldValue[channel] = sensors[channel].value;
+    int32_t historyDiff = sensors[channel].value - oldValue[out][channel];
+    oldValue[out][channel] = sensors[channel].value;
 
-    result -= historyDiff * D;
+    result -= historyDiff * config.pidCoef[out].D;
 
     //heat throttling
-    if(work_mode == MODE_HEAT && config.speedLimits[channel].heat_speed)
+    if(work_mode == MODE_HEAT && config.speedLimits[channel].heatSpeed)
     {
-        if(historyDiff > config.speedLimits[channel].heat_speed)
+        if(historyDiff > config.speedLimits[channel].heatSpeed)
         {
-            result -= historyDiff * P_HEATDIFF;
+            result -= historyDiff * config.pidCoef[out].PHeatDiff;
         }
     }
 
     //cold throttling
-    if(work_mode == MODE_COLD && config.speedLimits[channel].cool_speed)
+    if(work_mode == MODE_COLD && config.speedLimits[channel].coolSpeed)
     {
-        if(historyDiff < -config.speedLimits[channel].cool_speed)
+        if(historyDiff < -config.speedLimits[channel].coolSpeed)
         {
-            result -= historyDiff * P_COLDDIFF;
+            result -= historyDiff * config.pidCoef[out].PColdDiff;
         }
     }
 
@@ -219,6 +221,10 @@ static uint16_t normalize(int32_t rawPIDValue)
 
 static void resetPIDState(uint8_t channel)
 {
-    iCache[channel] = 0;
-    oldValue[channel] = sensors[channel].value;
+    for(uint8_t i = 0; i < OUT_COUNT; i++)
+    {
+        iCache[i][channel] = 0;
+        oldValue[i][channel] = sensors[channel].value;
+    }
 }
+
